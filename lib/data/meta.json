@@ -1,0 +1,14 @@
+{
+  "generatedAtISO": "2026-05-29T21:45:23.491Z",
+  "generatedAtHuman": "May 29, 2026",
+  "buildYear": 2026,
+  "academicYear": "2026-27",
+  "tuitionInflationAssumption": 0.05,
+  "giftTaxAnnualExclusion": 19000,
+  "superfunding5yr": 95000,
+  "superfunding5yrCouple": 190000,
+  "estateExemption2026": 15000000,
+  "rothRolloverLifetime": 35000,
+  "pellMax": 7395,
+  "note": "Tax and aid figures are maintained estimates for the 2025-2026 cycle and are stamped on each daily rebuild. Verify current numbers against the cited primary sources before acting."
+}
