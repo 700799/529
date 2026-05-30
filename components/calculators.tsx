@@ -320,6 +320,169 @@ export function LoanRepaymentCalculator() {
   );
 }
 
+// 8) Goal-seek: monthly needed ---------------------------------------------
+export function GoalSeekCalculator() {
+  const [goal, setGoal] = useState(150000);
+  const [years, setYears] = useState(18);
+  const [rate, setRate] = useState(7);
+  const [initial, setInitial] = useState(2000);
+
+  const r = rate / 100 / 12;
+  const n = years * 12;
+  const fvInitial = initial * Math.pow(1 + r, n);
+  const needed = n === 0 ? 0 : r === 0 ? (goal - fvInitial) / n : ((goal - fvInitial) * r) / (Math.pow(1 + r, n) - 1);
+  const monthly = Math.max(0, needed);
+  const totalOut = monthly * n + initial;
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">How much do I need to save each month?</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Work backwards from a target. Set the goal and timeline; we&apos;ll solve for the monthly contribution.
+      </p>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+          <NumberInput label="Savings goal" prefix="$" value={goal} onChange={setGoal} min={5000} step={5000} />
+          <NumberInput label="Starting balance" prefix="$" value={initial} onChange={setInitial} min={0} step={500} />
+          <Slider label="Years to save" value={years} min={1} max={18} onChange={setYears} display={`${years} yr`} />
+          <Slider label="Expected return" value={rate} min={1} max={10} step={0.5} onChange={setRate} display={pct(rate, 1)} />
+        </div>
+        <div className="flex flex-col justify-center gap-3">
+          <div className="rounded-2xl bg-brand-50 p-6 text-center dark:bg-brand-950/40">
+            <div className="text-sm font-medium text-slate-500 dark:text-slate-400">You&apos;d need to contribute</div>
+            <div className="mt-1 text-4xl font-extrabold text-brand-600 dark:text-brand-400">{usd(monthly)}</div>
+            <div className="text-sm text-slate-500 dark:text-slate-400">per month for {years} years</div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Mini label="Total you contribute" value={usd(totalOut)} tone="slate" />
+            <Mini label="Growth does the rest" value={usd(Math.max(0, goal - totalOut))} tone="green" />
+          </div>
+        </div>
+      </div>
+      <Callout tone="blue" title="Reverse the lesson">
+        Notice how much of the {usd(goal)} goal comes from tax-free growth rather than your own pocket — and how the required monthly
+        amount shrinks the earlier you start. Time, not income, is the biggest lever.
+      </Callout>
+    </div>
+  );
+}
+
+// 9) Start early vs. late ---------------------------------------------------
+export function StartEarlyVsLateCalculator() {
+  const [monthly, setMonthly] = useState(300);
+  const [rate, setRate] = useState(7);
+  const [lateStart, setLateStart] = useState(10);
+
+  const data = useMemo(() => {
+    const early = growthSeries({ monthly, years: 18, annualRate: rate / 100 });
+    return early.map((p) => {
+      const lateYears = Math.max(0, p.year - lateStart);
+      const lateBal = growthSeries({ monthly, years: lateYears, annualRate: rate / 100 });
+      return {
+        year: p.year,
+        "Start at birth": p.balance,
+        [`Start at age ${lateStart}`]: lateBal[lateBal.length - 1].balance,
+      };
+    });
+  }, [monthly, rate, lateStart]);
+
+  const earlyFinal = data[data.length - 1]["Start at birth"];
+  const lateFinal = data[data.length - 1][`Start at age ${lateStart}`];
+  const gap = earlyFinal - lateFinal;
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">The cost of waiting</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Same monthly contribution, two start dates. See how many years of compounding you give up by waiting.
+      </p>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+          <Slider label="Monthly contribution" value={monthly} min={50} max={1500} step={25} onChange={setMonthly} display={usd(monthly)} />
+          <Slider label="Expected return" value={rate} min={3} max={10} step={0.5} onChange={setRate} display={pct(rate, 1)} />
+          <Slider label="Late start age" value={lateStart} min={4} max={16} onChange={setLateStart} display={`age ${lateStart}`} />
+          <div className="grid grid-cols-1 gap-3 pt-1">
+            <Mini label={`Waiting until age ${lateStart} costs`} value={usd(gap)} tone="red" />
+          </div>
+        </div>
+        <div>
+          <CompareLines
+            data={data}
+            series={[
+              { key: "Start at birth", color: "#1d57f5", name: "Start at birth" },
+              { key: `Start at age ${lateStart}`, color: "#f97316", name: `Start at age ${lateStart}` },
+            ]}
+          />
+        </div>
+      </div>
+      <Callout tone="amber" title="Why the gap is so large">
+        The early account&apos;s first contributions compound for the full 18 years — the most valuable dollars you can invest. Starting at
+        age {lateStart} leaves roughly <strong>{usd(gap)}</strong> on the table at this contribution level, even though the monthly amount
+        is identical.
+      </Callout>
+    </div>
+  );
+}
+
+// 10) Value of a state tax deduction/credit --------------------------------
+export function StateBenefitCalculator() {
+  const [annual, setAnnual] = useState(10000);
+  const [years, setYears] = useState(18);
+  const [isCredit, setIsCredit] = useState(false);
+  const [rate, setRate] = useState(5); // state marginal rate OR credit %
+
+  const perYear = isCredit ? annual * (rate / 100) : annual * (rate / 100);
+  const total = perYear * years;
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">What is your state tax break worth?</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Many states reward 529 contributions with a deduction or a credit. Estimate the lifetime value for your family.
+      </p>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+          <NumberInput label="Annual contribution (eligible)" prefix="$" value={annual} onChange={setAnnual} min={0} step={500} />
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsCredit(false)}
+              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition " + (!isCredit ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
+            >
+              Deduction
+            </button>
+            <button
+              onClick={() => setIsCredit(true)}
+              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition " + (isCredit ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
+            >
+              Credit
+            </button>
+          </div>
+          <Slider
+            label={isCredit ? "Credit rate" : "State marginal tax rate"}
+            value={rate}
+            min={isCredit ? 5 : 2}
+            max={isCredit ? 50 : 13}
+            step={isCredit ? 5 : 0.5}
+            onChange={setRate}
+            display={pct(rate, isCredit ? 0 : 1)}
+          />
+          <Slider label="Years contributing" value={years} min={1} max={18} onChange={setYears} display={`${years} yr`} />
+        </div>
+        <div className="flex flex-col justify-center gap-3">
+          <Mini label="Tax savings per year" value={usd(perYear)} tone="green" />
+          <Mini label={`Lifetime savings (${years} yr)`} value={usd(total)} tone="green" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {isCredit
+              ? "A credit reduces your tax bill dollar-for-dollar — usually the more valuable benefit."
+              : "A deduction reduces taxable income, so its value depends on your marginal tax bracket."}{" "}
+            Caps and rules vary by state — see the Compare tab.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Small stat tile -----------------------------------------------------------
 function Mini({ label, value, tone }: { label: string; value: string; tone: "blue" | "green" | "red" | "slate" }) {
   const tones: Record<string, string> = {

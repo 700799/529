@@ -14,6 +14,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fetchArticles } from "./fetch-articles.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outDir = join(__dirname, "..", "lib", "data");
@@ -60,4 +61,33 @@ writeFileSync(
 
 console.log(
   `[generate-data] Stamped meta.json for ${meta.generatedAtHuman} (AY ${academicYear}).`
+);
+
+// --- Fresh articles (build-time fetch with graceful fallback) -------------
+let articles = { hasLive: false, liveCount: 0, feedsTried: 0, weeks: [] };
+try {
+  articles = await fetchArticles();
+} catch (e) {
+  console.warn("[generate-data] Article fetch failed; using curated fallback.", e?.message || e);
+}
+
+const articlesData = {
+  generatedAtISO: now.toISOString(),
+  generatedAtHuman: meta.generatedAtHuman,
+  hasLive: articles.hasLive,
+  liveCount: articles.liveCount,
+  feedsTried: articles.feedsTried,
+  weeks: articles.weeks,
+};
+
+writeFileSync(
+  join(outDir, "articles.json"),
+  JSON.stringify(articlesData, null, 2) + "\n",
+  "utf8"
+);
+
+console.log(
+  `[generate-data] Articles: ${articles.liveCount} live across ${articles.weeks.length} week(s) from ${articles.feedsTried} feeds${
+    articles.hasLive ? "" : " (falling back to curated library)"
+  }.`
 );
