@@ -170,6 +170,8 @@ export const sources: Source[] = [
   { category: "Government", name: "CFPB — Payday loans & student loans", url: "https://www.consumerfinance.gov/", used: "Payday-loan APR/fee data and borrower-protection guidance." },
   { category: "Research", name: "College Board — Trends in College Pricing & Student Aid", url: "https://research.collegeboard.org/trends", used: "Tuition trends, net price, discount rates, aid distribution." },
   { category: "Research", name: "The Institute for College Access & Success (TICAS)", url: "https://ticas.org/", used: "Average debt at graduation and share of borrowers." },
+  { category: "Athletics", name: "NCAA — Scholarships & Estimated Probability of Competing", url: "https://www.ncaa.org/sports/2013/11/20/scholarships.aspx", used: "Per-sport scholarship limits, headcount vs. equivalency, and HS-to-college odds." },
+  { category: "Athletics", name: "NCAA — Name, Image and Likeness (NIL)", url: "https://www.ncaa.org/sports/2021/6/28/name-image-likeness-policy-question-and-answer.aspx", used: "NIL policy background and the House settlement roster-limit changes." },
   { category: "Industry", name: "Saving for College / SavingforCollege.com", url: "https://www.savingforcollege.com/", used: "State plan details, fees, and 5-Cap ratings cross-checks." },
   { category: "Industry", name: "Morningstar 529 Plan Ratings", url: "https://www.morningstar.com/", used: "Plan quality/medalist tiers used to inform editorial tiers." },
   { category: "Industry", name: "College Savings Plans Network (CSPN)", url: "https://www.collegesavings.org/", used: "Plan directory, prepaid program status, contribution caps." },

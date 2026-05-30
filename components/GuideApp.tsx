@@ -9,6 +9,7 @@ import { Tradeoffs, AidStrategy, AgeSteps, GiftTaxSection } from "./sections/str
 import { CalculatorsSection, Crypto, JuniorCollege, Sources } from "./sections/extras";
 import { ReadingRoom } from "./sections/articles";
 import { LearnSection } from "./sections/learn";
+import { SpecialCases } from "./sections/special";
 import { HoverNav, BackToTop } from "./HoverNav";
 import { Subscribe } from "./Subscribe";
 import meta from "@/lib/data/meta.json";
@@ -34,6 +35,7 @@ const TABS: Tab[] = [
   { id: "learn", label: "FAQ & glossary" },
   { id: "articles", label: "Reading room" },
   { id: "sources", label: "Sources" },
+  { id: "special", label: "Sports & music scholarships" },
 ];
 
 export default function GuideApp() {
@@ -130,6 +132,7 @@ export default function GuideApp() {
           {active === "learn" && <LearnSection />}
           {active === "articles" && <ReadingRoom />}
           {active === "sources" && <Sources />}
+          {active === "special" && <SpecialCases />}
         </div>
 
         {active !== "articles" && active !== "overview" && (
