@@ -3,8 +3,10 @@
 import React, { useMemo, useState } from "react";
 import { Slider, NumberInput, Callout, Badge } from "./ui";
 import { GrowthAreaChart, CompareLines, SimpleBars } from "./charts";
-import { futureValue, growthSeries, usd, pct } from "@/lib/format";
+import { futureValue, growthSeries, usd, pct, monthlyPayment, inflate } from "@/lib/format";
 import { four01kRaid, paydayExample } from "@/lib/data/tradeoffs";
+import { schoolTiers } from "@/lib/data/schoolCosts";
+import meta from "@/lib/data/meta.json";
 
 // 1) College savings projection -------------------------------------------
 export function ProjectionCalculator() {
@@ -205,6 +207,115 @@ export function GiftSuperfundCalculator() {
           </Callout>
         </div>
       </div>
+    </div>
+  );
+}
+
+// 6) Future college-cost projector -----------------------------------------
+export function CollegeCostProjector() {
+  const [tierIdx, setTierIdx] = useState(1); // in-state public default
+  const [yearsAway, setYearsAway] = useState(18);
+  const [inflation, setInflation] = useState(meta.tuitionInflationAssumption * 100);
+
+  const tier = schoolTiers[tierIdx];
+  const futureAnnual = inflate(tier.sticker, inflation / 100, yearsAway);
+  const futureFourYear = inflate(tier.fourYearSticker, inflation / 100, yearsAway);
+
+  const data = Array.from({ length: yearsAway + 1 }, (_, y) => ({
+    year: y,
+    "Today's tier cost": Math.round(tier.sticker),
+    "Projected cost": Math.round(inflate(tier.sticker, inflation / 100, y)),
+  }));
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Future college-cost projector</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        College costs have historically risen faster than general inflation. See what a year (and four years) might cost when your child enrolls.
+      </p>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">School tier</span>
+            <select
+              value={tierIdx}
+              onChange={(e) => setTierIdx(parseInt(e.target.value, 10))}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            >
+              {schoolTiers.map((t, i) => (
+                <option key={t.tier} value={i}>
+                  {t.tier} — {usd(t.sticker)}/yr today
+                </option>
+              ))}
+            </select>
+          </label>
+          <Slider label="Years until enrollment" value={yearsAway} min={1} max={18} onChange={setYearsAway} display={`${yearsAway} yr`} />
+          <Slider label="Annual college inflation" value={inflation} min={2} max={8} step={0.5} onChange={setInflation} display={pct(inflation, 1)} />
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <Mini label="Projected 1 year" value={usd(futureAnnual)} tone="red" />
+            <Mini label="Projected 4 years" value={usd(futureFourYear)} tone="red" />
+          </div>
+        </div>
+        <div>
+          <CompareLines
+            data={data}
+            series={[
+              { key: "Projected cost", color: "#ef4444", name: "Projected annual cost" },
+              { key: "Today's tier cost", color: "#94a3b8", name: "Today's cost" },
+            ]}
+          />
+        </div>
+      </div>
+      <Callout tone="amber" title="Why starting early matters">
+        At {pct(inflation, 1)} annual inflation, a {usd(tier.sticker)} year becomes <strong>{usd(futureAnnual)}</strong> in {yearsAway} years.
+        This is exactly why tax-free compounding in a 529 — which can grow faster than tuition inflation — is so valuable when you start early.
+      </Callout>
+    </div>
+  );
+}
+
+// 7) Loan repayment calculator ---------------------------------------------
+export function LoanRepaymentCalculator() {
+  const [principal, setPrincipal] = useState(30000);
+  const [rate, setRate] = useState(6.39);
+  const [years, setYears] = useState(10);
+
+  const pay = monthlyPayment({ principal, annualRate: rate / 100, years });
+  const totalPaid = pay * years * 12;
+  const totalInterest = totalPaid - principal;
+
+  const bars = [
+    { name: "Principal", value: principal, color: "#1d57f5" },
+    { name: "Interest paid", value: Math.max(0, totalInterest), color: "#ef4444" },
+    { name: "Total repaid", value: totalPaid, color: "#0ea5e9" },
+  ];
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Student-loan repayment calculator</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        See the monthly payment and lifetime interest on a loan. Defaults to the federal undergrad rate; bump it to ~9% to model Parent PLUS.
+      </p>
+      <div className="mt-5 grid gap-6 lg:grid-cols-2">
+        <div className="space-y-5">
+          <NumberInput label="Amount borrowed" prefix="$" value={principal} onChange={setPrincipal} min={1000} step={1000} />
+          <Slider label="Interest rate" value={rate} min={3} max={14} step={0.1} onChange={setRate} display={pct(rate, 2)} />
+          <Slider label="Repayment term" value={years} min={5} max={25} onChange={setYears} display={`${years} yr`} />
+          <div className="grid grid-cols-3 gap-2 pt-2">
+            <Mini label="Monthly payment" value={usd(pay)} tone="blue" />
+            <Mini label="Total interest" value={usd(totalInterest)} tone="red" />
+            <Mini label="Total repaid" value={usd(totalPaid)} tone="slate" />
+          </div>
+        </div>
+        <div>
+          <SimpleBars data={bars} height={300} />
+        </div>
+      </div>
+      <Callout tone="blue" title="The interest reality">
+        Borrowing {usd(principal)} at {pct(rate, 2)} over {years} years means repaying <strong>{usd(totalPaid)}</strong> — about{" "}
+        <strong>{usd(totalInterest)}</strong> of it pure interest. Every dollar saved in a 529 is a dollar you never borrow and never pay
+        interest on. A shorter term raises the monthly payment but slashes total interest.
+      </Callout>
     </div>
   );
 }

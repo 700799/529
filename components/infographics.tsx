@@ -138,6 +138,87 @@ export function IconBook({ className = "h-6 w-6" }: { className?: string }) {
   );
 }
 
+export function VehicleMatrix() {
+  // Quick at-a-glance comparison of the main education vehicles.
+  const cols = ["529", "Coverdell", "UTMA", "Roth IRA"];
+  const rows: { label: string; vals: ("yes" | "no" | "mid")[] }[] = [
+    { label: "Tax-free growth for school", vals: ["yes", "yes", "no", "mid"] },
+    { label: "High contribution limit", vals: ["yes", "no", "yes", "no"] },
+    { label: "Gentle on financial aid", vals: ["yes", "yes", "no", "yes"] },
+    { label: "Flexible / non-education use", vals: ["mid", "no", "yes", "yes"] },
+    { label: "Owner keeps control", vals: ["yes", "yes", "no", "yes"] },
+  ];
+  const cell = (v: "yes" | "no" | "mid") => {
+    const map = {
+      yes: { bg: "bg-accent-100 dark:bg-accent-900/40", t: "text-accent-700 dark:text-accent-300", s: "Yes" },
+      no: { bg: "bg-red-100 dark:bg-red-900/40", t: "text-red-700 dark:text-red-300", s: "No" },
+      mid: { bg: "bg-amber-100 dark:bg-amber-900/40", t: "text-amber-700 dark:text-amber-300", s: "Partial" },
+    }[v];
+    return <span className={"inline-flex w-full items-center justify-center rounded-md py-1 text-xs font-semibold " + map.bg + " " + map.t}>{map.s}</span>;
+  };
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[28rem] border-separate border-spacing-1 text-sm">
+        <thead>
+          <tr>
+            <th className="text-left text-xs font-semibold uppercase tracking-wide text-slate-400">Feature</th>
+            {cols.map((c) => (
+              <th key={c} className="px-2 text-center text-xs font-bold text-slate-700 dark:text-slate-200">{c}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.label}>
+              <td className="py-1 pr-2 text-slate-600 dark:text-slate-300">{r.label}</td>
+              {r.vals.map((v, i) => (
+                <td key={i} className="w-20 px-1">{cell(v)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function AidShelterInfographic() {
+  // Before/after: moving reportable cash into sheltered buckets.
+  const before = [
+    { label: "Cash / brokerage (counted ~5.6%)", w: 70, color: "#ef4444" },
+    { label: "Child's custodial (counted 20%)", w: 30, color: "#b91c1c" },
+  ];
+  const after = [
+    { label: "Home equity (not counted on FAFSA)", w: 45, color: "#10b981" },
+    { label: "Retirement accounts (not counted)", w: 40, color: "#059669" },
+    { label: "Parent 529 (counted ~5.6%)", w: 15, color: "#1d57f5" },
+  ];
+  const Bar = ({ items, title }: { items: typeof before; title: string }) => (
+    <div>
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</p>
+      <div className="flex h-6 w-full overflow-hidden rounded-lg">
+        {items.map((it, i) => (
+          <div key={i} style={{ width: `${it.w}%`, background: it.color }} title={it.label} />
+        ))}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        {items.map((it, i) => (
+          <span key={i} className="inline-flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: it.color }} />
+            {it.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div className="space-y-4">
+      <Bar items={before} title="Before: assessable assets" />
+      <Bar items={after} title="After: legally repositioned" />
+    </div>
+  );
+}
+
 export function GiftTreeInfographic() {
   return (
     <svg viewBox="0 0 320 180" className="w-full" role="img" aria-label="Annual gift exclusion and 5-year superfunding diagram">

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { SectionHeader, Callout, Badge } from "../ui";
-import { FundingStack } from "../charts";
+import { FundingStack, SimpleBars } from "../charts";
 import { scenarios } from "@/lib/data/scenarios";
 import { usd } from "@/lib/format";
 
@@ -15,6 +15,23 @@ export function Scenarios() {
         title="Sample students & their funding packages"
         intro="Seven realistic students — from the early-saver success story to the worst-case stack of mistakes — with the exact mix of savings, grants, work, and loans that pays their way."
       />
+
+      <div className="card">
+        <h3 className="font-semibold text-slate-900 dark:text-white">Total debt at graduation, all seven students</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          The spread runs from $0 (smart plays) to six figures (the cautionary cases). Same goal, wildly different outcomes.
+        </p>
+        <div className="mt-3">
+          <SimpleBars
+            data={scenarios.map((s) => ({
+              name: s.name.split(" — ")[0],
+              value: s.totalDebt,
+              color: s.totalDebt === 0 ? "#10b981" : s.totalDebt > 50000 ? "#dc2626" : s.totalDebt > 12000 ? "#f97316" : "#1d57f5",
+            }))}
+            height={260}
+          />
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {scenarios.map((s) => (

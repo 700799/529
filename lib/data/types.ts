@@ -82,6 +82,8 @@ export interface Scenario {
   netPerYear: number;
   funding: { label: string; amount: number; color: string }[];
   loanPackage: string;
+  /** Approximate total debt at graduation (student + parent), 4-year basis. */
+  totalDebt: number;
   outcome: string;
   lesson: string;
 }

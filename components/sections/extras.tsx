@@ -7,6 +7,8 @@ import {
   PlanVsNoPlanCalculator,
   RetirementRaidCalculator,
   GiftSuperfundCalculator,
+  CollegeCostProjector,
+  LoanRepaymentCalculator,
 } from "../calculators";
 import { juniorCollegeOptions, sources } from "@/lib/data/misc";
 import meta from "@/lib/data/meta.json";
@@ -17,10 +19,12 @@ export function CalculatorsSection() {
       <SectionHeader
         eyebrow="Run the numbers"
         title="Calculators"
-        intro="Project your 529 growth, see the tax cost of not having a plan, measure the damage of raiding retirement, and plan grandparent gifting. All run live in your browser."
+        intro="Project your 529 growth and future college costs, see the tax cost of not having a plan, size up loan repayment, measure the damage of raiding retirement, and plan grandparent gifting. All run live in your browser."
       />
       <ProjectionCalculator />
+      <CollegeCostProjector />
       <PlanVsNoPlanCalculator />
+      <LoanRepaymentCalculator />
       <RetirementRaidCalculator />
       <GiftSuperfundCalculator />
     </div>
