@@ -74,14 +74,21 @@ export interface FederalProgram {
 
 export interface Scenario {
   id: string;
+  /** Full descriptive scenario title (no student name). */
   name: string;
+  /** Short label for pills and charts. */
+  short: string;
   archetype: string;
+  /** A detailed multi-sentence narrative of the family's situation and choices. */
+  description: string;
   family: string;
   school: string;
   stickerPerYear: number;
   netPerYear: number;
   funding: { label: string; amount: number; color: string }[];
   loanPackage: string;
+  /** Approximate total debt at graduation (student + parent), 4-year basis. */
+  totalDebt: number;
   outcome: string;
   lesson: string;
 }
@@ -121,4 +128,30 @@ export interface Source {
   name: string;
   url: string;
   used: string;
+}
+
+export interface Article {
+  title: string;
+  source: string;
+  url: string;
+  summary: string;
+  collection: string;
+  topic: string;
+  /** ISO date string; present on live build-fetched articles. */
+  date?: string;
+}
+
+export interface ArticleWeek {
+  weekLabel: string;
+  weekStart: string;
+  articles: Article[];
+}
+
+export interface ArticlesData {
+  generatedAtISO: string;
+  generatedAtHuman: string;
+  hasLive: boolean;
+  liveCount: number;
+  weeks: ArticleWeek[];
+  feedsTried: number;
 }

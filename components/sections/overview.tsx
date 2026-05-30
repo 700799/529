@@ -2,7 +2,7 @@
 
 import React from "react";
 import { SectionHeader, Callout, Stat, Badge } from "../ui";
-import { HeroArt, FlowDiagram, WaterfallInfographic, IconShield, IconCalc, IconBook, IconWarning } from "../infographics";
+import { HeroArt, FlowDiagram, WaterfallInfographic, VehicleMatrix, IconShield, IconCalc, IconBook, IconWarning } from "../infographics";
 import meta from "@/lib/data/meta.json";
 
 export function Overview({ go }: { go: (id: string) => void }) {
@@ -130,6 +130,16 @@ export function WhatIs529() {
         <FeatureCard title="The Roth escape hatch" body="Under SECURE 2.0, up to $35,000 of leftover 529 money can roll into the beneficiary's Roth IRA (15-year-old account, other rules apply) — easing the 'what if they don't go?' worry." tone="green" />
         <FeatureCard title="Scholarship relief" body="If your child wins a scholarship, you can withdraw up to that amount from the 529 and pay only income tax on earnings — the 10% penalty is waived." tone="green" />
         <FeatureCard title="Favorable for aid" body="A parent-owned 529 is assessed at most ~5.64% on the FAFSA, far gentler than a custodial account's 20%." tone="blue" />
+      </div>
+
+      <div className="card">
+        <h3 className="font-bold text-slate-900 dark:text-white">529 vs. the alternatives, at a glance</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          How the 529 stacks up against the other common education vehicles. See the Compare tab for the full detail.
+        </p>
+        <div className="mt-4">
+          <VehicleMatrix />
+        </div>
       </div>
 
       <Callout tone="red" title="The one real downside">

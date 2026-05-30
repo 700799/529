@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { SectionHeader, Callout, Badge } from "../ui";
-import { FundingStack } from "../charts";
+import { FundingStack, SimpleBars } from "../charts";
 import { scenarios } from "@/lib/data/scenarios";
 import { usd } from "@/lib/format";
 
@@ -13,8 +13,25 @@ export function Scenarios() {
       <SectionHeader
         eyebrow="Seven students"
         title="Sample students & their funding packages"
-        intro="Seven realistic students — from the early-saver success story to the worst-case stack of mistakes — with the exact mix of savings, grants, work, and loans that pays their way."
+        intro="Seven realistic situations — named by the strategy, not a student — from the early-saver success story to the worst-case stack of mistakes, each with the exact mix of savings, grants, work, and loans that pays the way, and a detailed walk-through of how the family got there."
       />
+
+      <div className="card">
+        <h3 className="font-semibold text-slate-900 dark:text-white">Total debt at graduation, all seven students</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          The spread runs from $0 (smart plays) to six figures (the cautionary cases). Same goal, wildly different outcomes.
+        </p>
+        <div className="mt-3">
+          <SimpleBars
+            data={scenarios.map((s) => ({
+              name: s.short,
+              value: s.totalDebt,
+              color: s.totalDebt === 0 ? "#10b981" : s.totalDebt > 50000 ? "#dc2626" : s.totalDebt > 12000 ? "#f97316" : "#1d57f5",
+            }))}
+            height={260}
+          />
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {scenarios.map((s) => (
@@ -28,7 +45,7 @@ export function Scenarios() {
                 : "bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700")
             }
           >
-            {s.name.split(" — ")[0]}
+            {s.short}
           </button>
         ))}
       </div>
@@ -48,7 +65,13 @@ export function Scenarios() {
                 {isWorst ? <Badge tone="red">Cautionary</Badge> : <Badge tone="green">Smart play</Badge>}
               </div>
 
-              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{s.family}</p>
+              <p className="mt-3 rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                {s.description}
+              </p>
+
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                <span className="font-semibold text-slate-800 dark:text-slate-100">Snapshot:</span> {s.family}
+              </p>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <Tile label="Sticker / year" value={usd(s.stickerPerYear)} />

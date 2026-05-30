@@ -30,6 +30,28 @@ export function futureValue({
   return fvLump + fvStream;
 }
 
+/** Standard fixed-rate loan monthly payment. */
+export function monthlyPayment({
+  principal,
+  annualRate,
+  years,
+}: {
+  principal: number;
+  annualRate: number;
+  years: number;
+}): number {
+  const r = annualRate / 12;
+  const n = years * 12;
+  if (n === 0) return 0;
+  if (r === 0) return principal / n;
+  return (principal * r) / (1 - Math.pow(1 + r, -n));
+}
+
+/** Project a cost forward by an annual inflation rate. */
+export function inflate(amount: number, rate: number, years: number): number {
+  return amount * Math.pow(1 + rate, years);
+}
+
 /** Build a year-by-year balance series for a contribution stream. */
 export function growthSeries({
   monthly,

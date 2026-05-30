@@ -3,7 +3,7 @@
 import React from "react";
 import { SectionHeader, Callout, Badge } from "../ui";
 import { RetirementRaidCalculator, PaydayWarning, GiftSuperfundCalculator } from "../calculators";
-import { GiftTreeInfographic } from "../infographics";
+import { GiftTreeInfographic, AidShelterInfographic } from "../infographics";
 import { tradeoffs } from "@/lib/data/tradeoffs";
 import { ageSteps } from "@/lib/data/misc";
 import { usd } from "@/lib/format";
@@ -84,6 +84,16 @@ export function AidStrategy() {
             <li><strong>Spend student assets first</strong> if any exist, before parental assets.</li>
             <li><strong>Use grandparent 529s freely now</strong> — see the win below.</li>
           </ul>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="font-bold text-slate-900 dark:text-white">Repositioning assets the formula treats gently</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          The same dollars, moved from assessable buckets into sheltered ones, can lower your Student Aid Index — without lowering your net worth.
+        </p>
+        <div className="mt-4">
+          <AidShelterInfographic />
         </div>
       </div>
 

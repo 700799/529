@@ -7,6 +7,11 @@ import {
   PlanVsNoPlanCalculator,
   RetirementRaidCalculator,
   GiftSuperfundCalculator,
+  CollegeCostProjector,
+  LoanRepaymentCalculator,
+  GoalSeekCalculator,
+  StartEarlyVsLateCalculator,
+  StateBenefitCalculator,
 } from "../calculators";
 import { juniorCollegeOptions, sources } from "@/lib/data/misc";
 import meta from "@/lib/data/meta.json";
@@ -17,13 +22,49 @@ export function CalculatorsSection() {
       <SectionHeader
         eyebrow="Run the numbers"
         title="Calculators"
-        intro="Project your 529 growth, see the tax cost of not having a plan, measure the damage of raiding retirement, and plan grandparent gifting. All run live in your browser."
+        intro="Ten interactive calculators. Project growth, solve for a monthly target, price the future cost of college, value your state tax break, weigh a plan against doing nothing, size up loans, and measure the damage of the worst-case moves. Everything runs live in your browser."
       />
-      <ProjectionCalculator />
-      <PlanVsNoPlanCalculator />
-      <RetirementRaidCalculator />
-      <GiftSuperfundCalculator />
+
+      <div className="flex flex-wrap gap-2 text-xs">
+        {["Save & grow", "Cost & goals", "Compare & decide", "Borrow & repay", "Worst cases"].map((g) => (
+          <span key={g} className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            {g}
+          </span>
+        ))}
+      </div>
+
+      <CalcGroup title="Save & grow">
+        <ProjectionCalculator />
+        <GoalSeekCalculator />
+        <StartEarlyVsLateCalculator />
+      </CalcGroup>
+
+      <CalcGroup title="Cost, goals & tax breaks">
+        <CollegeCostProjector />
+        <StateBenefitCalculator />
+      </CalcGroup>
+
+      <CalcGroup title="Compare & decide">
+        <PlanVsNoPlanCalculator />
+        <GiftSuperfundCalculator />
+      </CalcGroup>
+
+      <CalcGroup title="Borrow, repay & worst cases">
+        <LoanRepaymentCalculator />
+        <RetirementRaidCalculator />
+      </CalcGroup>
     </div>
+  );
+}
+
+function CalcGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-4">
+      <h3 className="border-l-4 border-brand-500 pl-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {title}
+      </h3>
+      {children}
+    </section>
   );
 }
 

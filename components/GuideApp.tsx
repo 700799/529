@@ -7,6 +7,11 @@ import { LoansAndAid } from "./sections/loans";
 import { Scenarios } from "./sections/scenarios";
 import { Tradeoffs, AidStrategy, AgeSteps, GiftTaxSection } from "./sections/strategy";
 import { CalculatorsSection, Crypto, JuniorCollege, Sources } from "./sections/extras";
+import { ReadingRoom } from "./sections/articles";
+import { LearnSection } from "./sections/learn";
+import { SpecialCases } from "./sections/special";
+import { HoverNav, BackToTop } from "./HoverNav";
+import { Subscribe } from "./Subscribe";
 import meta from "@/lib/data/meta.json";
 
 interface Tab {
@@ -27,7 +32,10 @@ const TABS: Tab[] = [
   { id: "gifts", label: "Grandparents & gifts" },
   { id: "crypto", label: "Crypto" },
   { id: "junior", label: "2-year & working programs" },
+  { id: "learn", label: "FAQ & glossary" },
+  { id: "articles", label: "Reading room" },
   { id: "sources", label: "Sources" },
+  { id: "special", label: "Sports & music scholarships" },
 ];
 
 export default function GuideApp() {
@@ -121,9 +129,21 @@ export default function GuideApp() {
           {active === "gifts" && <GiftTaxSection />}
           {active === "crypto" && <Crypto />}
           {active === "junior" && <JuniorCollege />}
+          {active === "learn" && <LearnSection />}
+          {active === "articles" && <ReadingRoom />}
           {active === "sources" && <Sources />}
+          {active === "special" && <SpecialCases />}
         </div>
+
+        {active !== "articles" && active !== "overview" && (
+          <div className="mt-12">
+            <Subscribe />
+          </div>
+        )}
       </main>
+
+      <HoverNav items={TABS} active={active} onSelect={go} />
+      <BackToTop />
 
       <footer className="border-t border-slate-200 bg-white py-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto max-w-6xl px-4 text-sm text-slate-500 dark:text-slate-400">
