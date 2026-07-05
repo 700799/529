@@ -276,7 +276,7 @@ function CostCalculator() {
       }
     }
     return { data: rows, totalSpent: spent, invested: Math.round(inv) };
-  }, [startAge, safeEnd, annual, investReturn, years, investKey]);
+  }, [startAge, annual, investReturn, years, investKey]);
 
   const avgScholarship = 18000;
 

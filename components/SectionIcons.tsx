@@ -98,6 +98,9 @@ const paths: Record<string, React.ReactNode> = {
   ),
 };
 
+/** Ids that have a defined icon — used by the section registry's dev guard. */
+export const iconIds = Object.keys(paths);
+
 export function SectionIcon({ id, className = "h-6 w-6" }: { id: string; className?: string }) {
   return (
     <svg

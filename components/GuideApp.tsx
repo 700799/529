@@ -1,67 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Overview, WhatIs529 } from "./sections/overview";
-import { ComparePlans } from "./sections/compare";
-import { LoansAndAid } from "./sections/loans";
-import { Scenarios } from "./sections/scenarios";
-import { Tradeoffs, AidStrategy, AgeSteps, GiftTaxSection } from "./sections/strategy";
-import { CalculatorsSection, Crypto, JuniorCollege, Sources } from "./sections/extras";
-import { ReadingRoom } from "./sections/articles";
-import { LearnSection } from "./sections/learn";
-import { SpecialCases } from "./sections/special";
 import { Subscribe } from "./Subscribe";
 import { Drawer } from "./Drawer";
 import { SectionIcon } from "./SectionIcons";
+import { SECTIONS } from "@/lib/sections";
 import meta from "@/lib/data/meta.json";
-
-interface Section {
-  id: string;
-  label: string;
-  blurb: string;
-  accent: string;
-}
-
-const SECTIONS: Section[] = [
-  { id: "overview", label: "Overview", blurb: "Start here", accent: "#1d57f5" },
-  { id: "what", label: "What is a 529?", blurb: "The basics", accent: "#0ea5e9" },
-  { id: "compare", label: "Compare plans", blurb: "50 states + more", accent: "#6366f1" },
-  { id: "calculators", label: "Calculators", blurb: "10 tools", accent: "#8b5cf6" },
-  { id: "loans", label: "Costs, loans & aid", blurb: "Pay for it", accent: "#0891b2" },
-  { id: "scenarios", label: "7 scenarios", blurb: "Real packages", accent: "#2563eb" },
-  { id: "tradeoffs", label: "Tradeoffs & worst cases", blurb: "Avoid these", accent: "#ef4444" },
-  { id: "aid-strategy", label: "Financial-aid strategy", blurb: "Maximize aid", accent: "#10b981" },
-  { id: "ages", label: "Steps by age", blurb: "Birth to grad", accent: "#14b8a6" },
-  { id: "gifts", label: "Grandparents & gifts", blurb: "Gift tax", accent: "#f59e0b" },
-  { id: "crypto", label: "Crypto", blurb: "Digital assets", accent: "#f97316" },
-  { id: "junior", label: "2-year & working", blurb: "Low-cost paths", accent: "#84cc16" },
-  { id: "learn", label: "FAQ & glossary", blurb: "Learn the terms", accent: "#22c55e" },
-  { id: "articles", label: "Reading room", blurb: "Weekly top 10", accent: "#3b82f6" },
-  { id: "special", label: "Sports & music", blurb: "Scholarships", accent: "#d946ef" },
-  { id: "sources", label: "Sources", blurb: "References", accent: "#64748b" },
-];
-
-function renderSection(id: string, go: (id: string) => void) {
-  switch (id) {
-    case "overview": return <Overview go={go} />;
-    case "what": return <WhatIs529 />;
-    case "compare": return <ComparePlans />;
-    case "calculators": return <CalculatorsSection />;
-    case "loans": return <LoansAndAid />;
-    case "scenarios": return <Scenarios />;
-    case "tradeoffs": return <Tradeoffs />;
-    case "aid-strategy": return <AidStrategy />;
-    case "ages": return <AgeSteps />;
-    case "gifts": return <GiftTaxSection />;
-    case "crypto": return <Crypto />;
-    case "junior": return <JuniorCollege />;
-    case "learn": return <LearnSection />;
-    case "articles": return <ReadingRoom />;
-    case "special": return <SpecialCases />;
-    case "sources": return <Sources />;
-    default: return null;
-  }
-}
 
 export default function GuideApp() {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -158,8 +102,8 @@ export default function GuideApp() {
       >
         {current && (
           <div className="animate-fade-in space-y-10">
-            {renderSection(current.id, go)}
-            {current.id !== "articles" && current.id !== "overview" && <Subscribe />}
+            {current.render(go)}
+            {current.showSubscribe && <Subscribe />}
             <SectionFooter onClose={close} onNext={next} nextLabel={next ? SECTIONS[idx + 1].label : undefined} />
           </div>
         )}
