@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "node scripts/generate-data.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/generate-data.mjs",
+    "prebuild": "node scripts/generate-data.mjs && node scripts/generate-og.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -23,6 +23,7 @@
     "postcss": "^8.5.10"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "22.10.2",
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
