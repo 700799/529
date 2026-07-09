@@ -1,0 +1,13 @@
+# Cloudflare Pages configuration (primary host).
+# The site is a static Next.js export; Cloudflare serves the `out/` directory.
+#
+# Dashboard setup (Git integration, recommended):
+#   Build command:      npm run build
+#   Build output dir:   out
+#   Environment vars:   leave NEXT_PUBLIC_BASE_PATH UNSET (serve at root);
+#                       set NEXT_PUBLIC_SITE_URL to your Pages/custom-domain URL.
+#
+# Or deploy the prebuilt output directly:
+#   npm run build && npx wrangler pages deploy out
+name = "guide-529"
+pages_build_output_dir = "out"
