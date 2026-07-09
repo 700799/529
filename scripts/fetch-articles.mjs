@@ -110,8 +110,9 @@ export async function fetchArticles() {
 
   // Dedupe by normalized title, keep dated + recent items.
   const seen = new Set();
+  const isHttp = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
   const fresh = collected
-    .filter((a) => a.title && a.url && a.date)
+    .filter((a) => a.title && isHttp(a.url) && a.date)
     .filter((a) => new Date(a.date) >= sixWeeksAgo)
     .filter((a) => {
       const key = a.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 80);

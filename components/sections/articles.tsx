@@ -18,13 +18,19 @@ function hostOf(url: string) {
   }
 }
 
+// Only ever emit http(s) hrefs — defense in depth against a compromised feed
+// smuggling a javascript:/data: URL into a link.
+function safeHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : "#";
+}
+
 function ArticleCard({ a, rank }: { a: Article; rank?: number }) {
   return (
     <a
-      href={a.url}
+      href={safeHref(a.url)}
       target="_blank"
       rel="noopener noreferrer"
-      className="card card-hover group relative flex flex-col"
+      className="card card-hover group relative flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
