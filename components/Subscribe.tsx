@@ -2,15 +2,17 @@
 
 import React, { useState } from "react";
 
-// Email capture for a static site. With no backend, this supports three modes,
-// chosen at build time via env vars (no secrets committed):
-//   1. NEXT_PUBLIC_SUBSCRIBE_ENDPOINT  -> POSTs {email} to your form provider
+// Email capture for a static site. With no backend, this is configured at
+// build time via env vars (no secrets or personal addresses committed):
+//   1. NEXT_PUBLIC_SUBSCRIBE_ENDPOINT -> POSTs {email} to your form provider
 //      (Formspree, Buttondown, Mailchimp embedded endpoint, a serverless fn...).
-//   2. Otherwise falls back to a mailto: to NEXT_PUBLIC_SUBSCRIBE_EMAIL.
-//   3. Always also remembers the address locally so the UI can confirm.
+//   2. Else, if NEXT_PUBLIC_SUBSCRIBE_EMAIL is set -> opens a mailto: to it.
+//   3. Else -> captures the address to localStorage and tells the visitor to
+//      configure a provider. No hardcoded destination address ships in the
+//      bundle.
 
 const ENDPOINT = process.env.NEXT_PUBLIC_SUBSCRIBE_ENDPOINT || "";
-const TO_EMAIL = process.env.NEXT_PUBLIC_SUBSCRIBE_EMAIL || "sanramonnorth@gmail.com";
+const TO_EMAIL = process.env.NEXT_PUBLIC_SUBSCRIBE_EMAIL || "";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -52,18 +54,20 @@ export function Subscribe({ compact = false }: { compact?: boolean }) {
       }
     }
 
-    // Fallback: open the visitor's mail client and confirm local capture.
-    const subject = encodeURIComponent("Subscribe me to the weekly 529 reading list");
-    const body = encodeURIComponent(`Please add ${email} to the weekly 529 & college-funding digest.`);
-    if (typeof window !== "undefined") {
+    // No provider endpoint succeeded. If a destination address is configured,
+    // open the visitor's mail client; otherwise just confirm the local capture.
+    if (TO_EMAIL && typeof window !== "undefined") {
+      const subject = encodeURIComponent("Subscribe me to the weekly 529 reading list");
+      const body = encodeURIComponent(`Please add ${email} to the weekly 529 & college-funding digest.`);
       window.location.href = `mailto:${TO_EMAIL}?subject=${subject}&body=${body}`;
+      setStatus("ok");
+      setMsg("We opened your email app to finish subscribing.");
+    } else {
+      setStatus("ok");
+      setMsg(
+        "Saved on this device. To deliver the digest, configure a subscribe endpoint (NEXT_PUBLIC_SUBSCRIBE_ENDPOINT)."
+      );
     }
-    setStatus("ok");
-    setMsg(
-      ENDPOINT
-        ? "We opened your email app to finish subscribing."
-        : "Saved. We opened your email app to confirm — or wire up a provider endpoint to automate it."
-    );
     setEmail("");
   }
 

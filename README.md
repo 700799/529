@@ -66,16 +66,43 @@ NEXT_PUBLIC_BASE_PATH=/529 npm run build
 
 ## "Refresh every day"
 
-`scripts/generate-data.mjs` runs before every build and stamps `lib/data/meta.json`
-with the current date, academic year, and time-sensitive constants. The GitHub
-Actions workflow (`.github/workflows/deploy.yml`) runs on a **daily cron
-(08:10 UTC)**, so each rebuild re-stamps "today" and redeploys.
+`scripts/generate-data.mjs` runs before every build: it stamps
+`lib/data/meta.json` with the current date, academic year, and time-sensitive
+constants, and `scripts/fetch-articles.mjs` pulls fresh reading-room articles.
+`scripts/generate-og.mjs` renders the social-share image. Because these run in
+`prebuild`, **every rebuild reflects the day it was built** — so the site must be
+rebuilt daily on whichever host is live (see below).
 
-## Deployment (GitHub Pages)
+## Deployment
 
-1. In the repo, go to **Settings → Pages** and set **Source = GitHub Actions**.
-2. Merge this branch into `main`.
-3. The workflow builds with the correct base path and publishes to Pages.
-   It also redeploys daily and can be triggered manually from the Actions tab.
+The app is base-path-agnostic: `next.config.mjs` derives `basePath`/`assetPrefix`
+from `NEXT_PUBLIC_BASE_PATH`, and `NEXT_PUBLIC_SITE_URL` sets the canonical/OG
+origin. Build env per host:
 
-The site will be served at `https://<owner>.github.io/<repo>/`.
+| Host | `NEXT_PUBLIC_BASE_PATH` | `NEXT_PUBLIC_SITE_URL` | Security headers |
+|------|-------------------------|------------------------|------------------|
+| **Cloudflare Pages** (primary) | _(unset → root)_ | your Pages/custom-domain URL | **yes** (`public/_headers`) |
+| **GitHub Pages** (fallback) | `/529` (set by CI) | `https://<owner>.github.io/529` | no (Pages can't set headers) |
+
+### Cloudflare Pages (primary, recommended)
+
+1. Cloudflare dashboard → **Pages → Create → Connect to Git**, pick this repo.
+2. Build command `npm run build`, output directory `out`. Leave
+   `NEXT_PUBLIC_BASE_PATH` unset; set `NEXT_PUBLIC_SITE_URL` to your Pages URL.
+3. `public/_headers` (CSP, HSTS, `X-Frame-Options`, etc.) and `public/_redirects`
+   are honored automatically. `wrangler.toml` documents a direct
+   `npx wrangler pages deploy out` alternative.
+4. **Daily refresh:** create a **Deploy Hook** (Pages → Settings → Builds &
+   deployments) and save the URL as the repo secret `CF_DEPLOY_HOOK`. The
+   `.github/workflows/cf-refresh.yml` cron POSTs it daily (08:20 UTC) to rebuild
+   with fresh data; it also runs on demand via **workflow_dispatch**.
+
+### GitHub Pages (fallback)
+
+1. **Settings → Pages → Source = GitHub Actions**.
+2. `.github/workflows/deploy.yml` builds with base path `/529`, runs the
+   typecheck/lint/audit gates, and publishes daily (cron 08:10 UTC). Served at
+   `https://<owner>.github.io/529/`.
+
+> If the site looks stale, the daily rebuild isn't running — confirm Pages/CF is
+> enabled and the relevant cron/deploy-hook is configured.

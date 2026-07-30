@@ -51,7 +51,7 @@ export function ToggleGroup<T extends string>({
             aria-pressed={active}
             className={
               (size === "sm" ? "px-3 py-1 text-xs " : "px-4 py-1.5 text-sm ") +
-              "rounded-full font-medium transition " +
+              "rounded-full font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " +
               (active
                 ? "bg-white text-brand-700 shadow-sm dark:bg-slate-950 dark:text-brand-300"
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100")

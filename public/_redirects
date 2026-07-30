@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects. Real static files (with trailingSlash) take
+# precedence; this only fires for paths that don't match an asset, serving the
+# Next-generated 404 page with a proper 404 status. (GitHub Pages ignores this
+# file.)
+/*    /404.html    404

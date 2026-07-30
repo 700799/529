@@ -1,0 +1,28 @@
+name: Daily Cloudflare Pages Refresh
+
+# Rebuilds the primary Cloudflare Pages deployment every day so the site
+# re-stamps the current date and fetches fresh articles. Uses a Cloudflare
+# Deploy Hook (no API tokens needed): create one in
+#   Cloudflare Pages > your project > Settings > Builds & deployments > Deploy hooks
+# and store the URL as the repo secret CF_DEPLOY_HOOK.
+on:
+  schedule:
+    - cron: "20 8 * * *" # daily, just after the GitHub Pages refresh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages rebuild
+        env:
+          HOOK: ${{ secrets.CF_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "CF_DEPLOY_HOOK secret is not set; skipping (configure it to enable the daily Cloudflare refresh)."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" && echo "Triggered Cloudflare Pages rebuild."

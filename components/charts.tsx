@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -29,13 +29,45 @@ function compactUSD(n: number) {
   return `$${n}`;
 }
 
+/**
+ * Renders a fixed-height box and only mounts its chart child once the box has a
+ * real width. This keeps charts inside prerendered-but-hidden sections (the SEO
+ * prerender in the drawer) from rendering — and from logging recharts'
+ * zero-dimension warnings — until their section is actually shown. A
+ * ResizeObserver flips it on when the section becomes visible.
+ */
+function Gate({ height, children }: { height: number; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (el.clientWidth > 0 && el.clientHeight > 0) setReady(true);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ width: "100%", height }}>
+      {ready ? (
+        <ResponsiveContainer width="100%" height="100%">
+          {children as React.ReactElement}
+        </ResponsiveContainer>
+      ) : null}
+    </div>
+  );
+}
+
 export function GrowthAreaChart({
   data,
 }: {
   data: { year: number; balance: number; contributed: number }[];
 }) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <Gate height={300}>
       <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1">
@@ -58,7 +90,7 @@ export function GrowthAreaChart({
         <Area type="monotone" dataKey="contributed" stroke="#94a3b8" fill="url(#gCon)" strokeWidth={2} name="Contributed" />
         <Area type="monotone" dataKey="balance" stroke="#1d57f5" fill="url(#gBal)" strokeWidth={2.5} name="Balance" />
       </AreaChart>
-    </ResponsiveContainer>
+    </Gate>
   );
 }
 
@@ -70,7 +102,7 @@ export function CompareLines({
   series: { key: string; color: string; name: string }[];
 }) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <Gate height={300}>
       <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={grid} />
         <XAxis dataKey="year" tick={axisStyle} tickLine={false} axisLine={{ stroke: grid }} unit="y" />
@@ -85,7 +117,7 @@ export function CompareLines({
           <Line key={s.key} type="monotone" dataKey={s.key} stroke={s.color} strokeWidth={2.5} dot={false} name={s.name} />
         ))}
       </LineChart>
-    </ResponsiveContainer>
+    </Gate>
   );
 }
 
@@ -98,7 +130,7 @@ export function FundingStack({
   const row: Record<string, number> = { name: 0 as unknown as number };
   data.forEach((d, i) => (row[`s${i}`] = d.amount));
   return (
-    <ResponsiveContainer width="100%" height={90}>
+    <Gate height={90}>
       <BarChart layout="vertical" data={[row]} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} stackOffset="none">
         <XAxis type="number" tick={axisStyle} tickFormatter={compactUSD} axisLine={false} tickLine={false} />
         <YAxis type="category" dataKey="name" hide />
@@ -113,7 +145,7 @@ export function FundingStack({
           <Bar key={i} dataKey={`s${i}`} stackId="a" fill={d.color} radius={i === 0 ? [6, 0, 0, 6] : i === data.length - 1 ? [0, 6, 6, 0] : 0} />
         ))}
       </BarChart>
-    </ResponsiveContainer>
+    </Gate>
   );
 }
 
@@ -129,7 +161,7 @@ export function SimpleBars({
   referenceY?: number;
 }) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <Gate height={height}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={grid} vertical={false} />
         <XAxis dataKey="name" tick={{ ...axisStyle, fontSize: 11 }} interval={0} tickLine={false} axisLine={{ stroke: grid }} />
@@ -146,7 +178,7 @@ export function SimpleBars({
           ))}
         </Bar>
       </BarChart>
-    </ResponsiveContainer>
+    </Gate>
   );
 }
 
@@ -158,7 +190,7 @@ export function DonutChart({
   height?: number;
 }) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <Gate height={height}>
       <PieChart>
         <Pie data={data} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
           {data.map((d, i) => (
@@ -171,6 +203,6 @@ export function DonutChart({
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
       </PieChart>
-    </ResponsiveContainer>
+    </Gate>
   );
 }

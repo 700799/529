@@ -18,13 +18,19 @@ function hostOf(url: string) {
   }
 }
 
+// Only ever emit http(s) hrefs — defense in depth against a compromised feed
+// smuggling a javascript:/data: URL into a link.
+function safeHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : "#";
+}
+
 function ArticleCard({ a, rank }: { a: Article; rank?: number }) {
   return (
     <a
-      href={a.url}
+      href={safeHref(a.url)}
       target="_blank"
       rel="noopener noreferrer"
-      className="card card-hover group relative flex flex-col"
+      className="card card-hover group relative flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -134,7 +140,7 @@ function FreshView({ weeks, hasLive }: { weeks: ArticleWeek[]; hasLive: boolean 
               key={w.weekStart}
               onClick={() => setWi(i)}
               className={
-                "rounded-full px-3 py-1 text-xs font-medium transition " +
+                "rounded-full px-3 py-1 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " +
                 (i === wi
                   ? "bg-brand-600 text-white"
                   : "bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700")
@@ -181,7 +187,7 @@ function LibraryView() {
               key={c}
               onClick={() => setColl(c)}
               className={
-                "rounded-full px-3 py-1 text-xs font-medium transition " +
+                "rounded-full px-3 py-1 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " +
                 (collection === c
                   ? "bg-white text-brand-700 shadow-sm dark:bg-slate-950 dark:text-brand-300"
                   : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100")
@@ -223,7 +229,7 @@ function LibraryView() {
                 key={i}
                 onClick={() => setPage(i)}
                 className={
-                  "h-8 w-8 rounded-full text-xs font-semibold transition " +
+                  "h-8 w-8 rounded-full text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " +
                   (i === safePage
                     ? "bg-brand-600 text-white"
                     : "bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700")
@@ -258,7 +264,7 @@ function PagerButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700"
+      className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700"
     >
       {children}
     </button>
