@@ -1,5 +1,11 @@
 import GuideApp from "@/components/GuideApp";
+import { StructuredData } from "@/components/StructuredData";
 
 export default function Home() {
-  return <GuideApp />;
+  return (
+    <>
+      <StructuredData />
+      <GuideApp />
+    </>
+  );
 }

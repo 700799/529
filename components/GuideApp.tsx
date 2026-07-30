@@ -109,9 +109,11 @@ export default function GuideApp() {
         {/* App launcher grid — fits the viewport, no scrolling */}
         <main className="flex min-h-0 flex-1 flex-col px-3 pb-3 sm:px-6 sm:pb-6">
           <div className="mb-2 shrink-0 px-1 sm:mb-3">
-            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+            {/* h2, not h1: the Overview section's prerendered headline (below) is
+                the page's single h1 for SEO. */}
+            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
               Everything you need to pay for college
-            </h1>
+            </h2>
             <p className="hidden text-sm text-slate-500 dark:text-slate-400 sm:block">
               Tap any tile — it opens in a drawer. Compare every plan, run the calculators, and avoid the worst-case mistakes.
             </p>
@@ -152,7 +154,7 @@ export default function GuideApp() {
         {SECTIONS.map((s, i) => {
           const nextOfThis = i < SECTIONS.length - 1 ? SECTIONS[i + 1] : undefined;
           return (
-            <div key={s.id} hidden={s.id !== contentActiveId} className="space-y-10">
+            <div key={s.id} id={s.id} hidden={s.id !== contentActiveId} className="space-y-10">
               {s.render(go)}
               {s.showSubscribe && <Subscribe />}
               <SectionFooter

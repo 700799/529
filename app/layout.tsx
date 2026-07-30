@@ -9,24 +9,31 @@ const rawBase = process.env.NEXT_PUBLIC_SITE_URL || "https://700799.github.io/52
 const siteUrl = rawBase.endsWith("/") ? rawBase : rawBase + "/";
 
 const title = "The Complete 529 & College Funding Guide";
+// Kept under ~160 characters so Google shows it in full in the search snippet
+// (the longer, keyword-rich version still lives in the OpenGraph description).
 const description =
-  "A self-contained, daily-refreshed guide to 529 education savings plans: compare all 50 states + DC and private plans, prepaid tuition, Coverdell, calculators, loans, financial-aid strategy, scholarships, crypto, and worst-case tradeoffs.";
+  "Compare every 529 plan (50 states + DC), private & prepaid options. Free calculators, financial-aid strategy, student loans, and scholarships — updated daily.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title,
+  title: { default: title, template: "%s | 529 Guide" },
   description,
   applicationName: "529 Guide",
+  category: "education",
   keywords: [
     "529 plan",
-    "college savings",
-    "education savings",
-    "Coverdell",
-    "prepaid tuition",
-    "financial aid",
-    "student loans",
+    "compare 529 plans",
+    "college savings plan",
+    "college savings calculator",
+    "education savings account",
+    "Coverdell ESA",
+    "prepaid tuition plan",
+    "financial aid strategy",
     "FAFSA",
-    "scholarships",
+    "student loans",
+    "Parent PLUS loan",
+    "college scholarships",
+    "grandparent 529",
   ],
   authors: [{ name: "529 Guide" }],
   alternates: { canonical: "./" },
