@@ -7,6 +7,15 @@ import { futureValue, growthSeries, usd, pct, monthlyPayment, inflate } from "@/
 import { four01kRaid, paydayExample } from "@/lib/data/tradeoffs";
 import { schoolTiers } from "@/lib/data/schoolCosts";
 import meta from "@/lib/data/meta.json";
+import { statePlans } from "@/lib/data/statePlans";
+import { stateTaxBenefits, annualBenefitValue } from "@/lib/data/stateTaxBenefits";
+import { DATA_CYCLE_HEADLINE } from "@/lib/data/meta-cycle";
+
+// Median lowest-fee across the state plans, used as the projection default.
+const MEDIAN_PLAN_FEE = (() => {
+  const fees = statePlans.map((p) => p.lowestFeePct).filter((f) => f > 0).sort((a, b) => a - b);
+  return Math.round(fees[Math.floor(fees.length / 2)] * 100) / 100;
+})();
 
 // 1) College savings projection -------------------------------------------
 export function ProjectionCalculator() {
@@ -14,13 +23,25 @@ export function ProjectionCalculator() {
   const [monthly, setMonthly] = useState(300);
   const [years, setYears] = useState(18);
   const [rate, setRate] = useState(7);
+  // Plan fees are charged as a percentage of assets every year, so over an
+  // 18-year horizon they compound against you. Projecting a gross return
+  // silently overstates the outcome; the default is the median state plan fee.
+  const [feePct, setFeePct] = useState(MEDIAN_PLAN_FEE);
 
+  const netRate = Math.max(0, rate - feePct);
   const series = useMemo(
-    () => growthSeries({ monthly, years, annualRate: rate / 100, initial }),
-    [monthly, years, rate, initial]
+    () => growthSeries({ monthly, years, annualRate: netRate / 100, initial }),
+    [monthly, years, netRate, initial]
   );
   const final = series[series.length - 1];
   const earnings = final.balance - final.contributed;
+
+  // What the same plan would return with no fee at all, to price the drag.
+  const grossFinal = useMemo(
+    () => growthSeries({ monthly, years, annualRate: rate / 100, initial }),
+    [monthly, years, rate, initial]
+  )[years];
+  const feeCost = grossFinal.balance - final.balance;
 
   return (
     <div className="card">
@@ -34,6 +55,7 @@ export function ProjectionCalculator() {
           <Slider label="Monthly contribution" value={monthly} min={0} max={2000} step={25} onChange={setMonthly} display={usd(monthly)} />
           <Slider label="Years until college" value={years} min={1} max={18} onChange={setYears} display={`${years} yr`} />
           <Slider label="Expected annual return" value={rate} min={1} max={10} step={0.5} onChange={setRate} display={pct(rate, 1)} />
+          <Slider label="Plan fee (annual, % of assets)" value={feePct} min={0} max={1.5} step={0.01} onChange={setFeePct} display={pct(feePct, 2)} />
           <div className="grid grid-cols-3 gap-2 pt-2">
             <Mini label="Contributed" value={usd(final.contributed)} tone="slate" />
             <Mini label="Tax-free earnings" value={usd(earnings)} tone="green" />
@@ -48,6 +70,12 @@ export function ProjectionCalculator() {
         In a taxable account, the {usd(earnings)} of earnings would be taxed along the way and again at withdrawal. In a 529, qualified
         withdrawals are 100% tax-free — and many states add a deduction or credit on the way in.
       </Callout>
+      {feeCost > 0 && (
+        <Callout tone="amber" title="What the fee costs you">
+          At {pct(feePct, 2)}/yr, fees consume {usd(feeCost)} of this projection over {years} years — which is why the cheapest
+          plan in the Compare tab is usually the right one. The lowest state plan fees are under 0.10%.
+        </Callout>
+      )}
     </div>
   );
 }
@@ -426,57 +454,96 @@ export function StartEarlyVsLateCalculator() {
 
 // 10) Value of a state tax deduction/credit --------------------------------
 export function StateBenefitCalculator() {
+  const [abbr, setAbbr] = useState("NY");
   const [annual, setAnnual] = useState(10000);
   const [years, setYears] = useState(18);
-  const [isCredit, setIsCredit] = useState(false);
-  const [rate, setRate] = useState(5); // state marginal rate OR credit %
+  const [joint, setJoint] = useState(true);
+  const [rate, setRate] = useState(5); // state marginal income-tax rate
 
-  const perYear = isCredit ? annual * (rate / 100) : annual * (rate / 100);
+  const plan = statePlans.find((p) => p.abbr === abbr)!;
+  const benefit = stateTaxBenefits[abbr];
+
+  const perYear = annualBenefitValue({ benefit, contribution: annual, marginalRatePct: rate, joint });
   const total = perYear * years;
+
+  // The cap is the point: contributing above it earns nothing extra, and the
+  // old version of this calculator quietly ignored that.
+  const cap = benefit.uncapped ? undefined : joint ? benefit.deductionJoint : benefit.deductionSingle;
+  const overCap = benefit.kind === "deduction" && cap !== undefined && annual > cap;
+
+  const sortedStates = useMemo(
+    () => [...statePlans].sort((a, b) => a.state.localeCompare(b.state)),
+    [],
+  );
 
   return (
     <div className="card">
       <h3 className="text-lg font-bold text-slate-900 dark:text-white">What is your state tax break worth?</h3>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Many states reward 529 contributions with a deduction or a credit. Estimate the lifetime value for your family.
+        Pick your state — the deduction or credit cap is applied automatically.
       </p>
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
         <div className="space-y-5">
-          <NumberInput label="Annual contribution (eligible)" prefix="$" value={annual} onChange={setAnnual} min={0} step={500} />
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Your state</span>
+            <select
+              value={abbr}
+              onChange={(e) => setAbbr(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            >
+              {sortedStates.map((p) => (
+                <option key={p.abbr} value={p.abbr}>
+                  {p.state}
+                </option>
+              ))}
+            </select>
+          </label>
+          <NumberInput label="Annual contribution" prefix="$" value={annual} onChange={setAnnual} min={0} step={500} />
           <div className="flex gap-2">
             <button
-              onClick={() => setIsCredit(false)}
-              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition " + (!isCredit ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
+              onClick={() => setJoint(false)}
+              aria-pressed={!joint}
+              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " + (!joint ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
             >
-              Deduction
+              Single
             </button>
             <button
-              onClick={() => setIsCredit(true)}
-              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition " + (isCredit ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
+              onClick={() => setJoint(true)}
+              aria-pressed={joint}
+              className={"flex-1 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 " + (joint ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")}
             >
-              Credit
+              Married filing jointly
             </button>
           </div>
-          <Slider
-            label={isCredit ? "Credit rate" : "State marginal tax rate"}
-            value={rate}
-            min={isCredit ? 5 : 2}
-            max={isCredit ? 50 : 13}
-            step={isCredit ? 5 : 0.5}
-            onChange={setRate}
-            display={pct(rate, isCredit ? 0 : 1)}
-          />
+          {benefit.kind === "deduction" && (
+            <Slider
+              label="State marginal tax rate"
+              value={rate}
+              min={0}
+              max={13}
+              step={0.5}
+              onChange={setRate}
+              display={pct(rate, 1)}
+            />
+          )}
           <Slider label="Years contributing" value={years} min={1} max={18} onChange={setYears} display={`${years} yr`} />
         </div>
         <div className="flex flex-col justify-center gap-3">
-          <Mini label="Tax savings per year" value={usd(perYear)} tone="green" />
-          <Mini label={`Lifetime savings (${years} yr)`} value={usd(total)} tone="green" />
+          <Mini label="Tax savings per year" value={usd(perYear)} tone={perYear > 0 ? "green" : "slate"} />
+          <Mini label={`Lifetime savings (${years} yr)`} value={usd(total)} tone={total > 0 ? "green" : "slate"} />
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {isCredit
-              ? "A credit reduces your tax bill dollar-for-dollar — usually the more valuable benefit."
-              : "A deduction reduces taxable income, so its value depends on your marginal tax bracket."}{" "}
-            Caps and rules vary by state — see the Compare tab.
+            <span className="font-semibold text-slate-600 dark:text-slate-300">{plan.state}:</span>{" "}
+            {plan.stateTaxBenefit}.
+            {benefit.kind === "credit" && " A credit reduces your tax bill dollar-for-dollar — usually the more valuable benefit."}
+            {benefit.kind === "none" && " No contribution tax break, so the federal tax-free growth is the whole benefit here."}
+            {benefit.caveat ? ` ${benefit.caveat}` : ""}
           </p>
+          {overCap && (
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+              Only {usd(cap!)} of your {usd(annual)} contribution is deductible — the rest earns no state break.
+            </p>
+          )}
+          <p className="text-xs text-slate-400 dark:text-slate-500">{DATA_CYCLE_HEADLINE}</p>
         </div>
       </div>
     </div>

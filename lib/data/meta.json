@@ -1,5 +1,5 @@
 {
-  "generatedAtISO": "2026-08-18T23:05:57.907Z",
+  "generatedAtISO": "2026-08-18T23:20:28.840Z",
   "generatedAtHuman": "August 18, 2026",
   "buildYear": 2026,
   "academicYear": "2027-28",
@@ -10,5 +10,6 @@
   "estateExemption2026": 15000000,
   "rothRolloverLifetime": 35000,
   "pellMax": 7395,
-  "note": "Tax and aid figures are maintained estimates for the 2025-2026 cycle and are stamped on each daily rebuild. Verify current numbers against the cited primary sources before acting."
+  "dataCycle": "2025-26",
+  "note": "Tax and aid figures are maintained estimates for the 2025-26 cycle. The site rebuilds daily, but that re-stamps the date and refreshes articles -- it does not re-verify these figures. Check them against the cited primary sources before acting."
 }

@@ -128,3 +128,14 @@ describe("section registry", () => {
     for (const s of SECTIONS) expect(sectionById[s.id]).toBe(s);
   });
 });
+
+describe("data cycle", () => {
+  it("keeps meta.json's stamped cycle in sync with DATA_CYCLE", async () => {
+    // Two files declare the cycle: lib/data/meta-cycle.ts (used by the UI) and
+    // scripts/generate-data.mjs (stamped into meta.json). If they drift, the
+    // site shows one cycle in the compare table and another in the footer.
+    const { DATA_CYCLE } = await import("@/lib/data/meta-cycle");
+    const meta = (await import("@/lib/data/meta.json")).default as { dataCycle?: string };
+    expect(meta.dataCycle, "run `npm run refresh` after changing DATA_CYCLE").toBe(DATA_CYCLE);
+  });
+});

@@ -7,6 +7,7 @@ import { directSoldPlans } from "@/lib/data/directSold";
 import { prepaidPlans } from "@/lib/data/prepaidPlans";
 import { altVehicles } from "@/lib/data/altVehicles";
 import { pct } from "@/lib/format";
+import { DATA_CYCLE_HEADLINE, DATA_CYCLE_CAVEAT } from "@/lib/data/meta-cycle";
 
 type View = "states" | "private" | "prepaid" | "alt";
 type SortKey = "state" | "lowestFeePct" | "maxBalance" | "tier";
@@ -29,6 +30,12 @@ export function ComparePlans() {
         title="Every 529 plan, side by side"
         intro="Toggle between all 50 states + DC, the brand-name private plans (Vanguard, Fidelity, Schwab), prepaid tuition programs, and non-529 alternatives like Coverdell."
       />
+      {/* The site rebuilds nightly, but these figures are hand-maintained. Say
+          so next to the numbers rather than letting a fresh date imply
+          freshly verified data. */}
+      <p className="-mt-4 text-xs text-slate-500 dark:text-slate-400">
+        <span className="font-semibold">{DATA_CYCLE_HEADLINE}</span> {DATA_CYCLE_CAVEAT}
+      </p>
 
       <div className="flex flex-wrap items-center gap-3">
         <ToggleGroup<View>
