@@ -13,7 +13,7 @@ test.describe("launcher", () => {
   test("renders all 16 section tiles", async ({ page }) => {
     const errors = trackConsoleErrors(page);
     await page.goto("/");
-    await expect(page.locator("main button")).toHaveCount(16);
+    await expect(page.locator("main a[href]")).toHaveCount(16);
     expect(errors).toEqual([]);
   });
 

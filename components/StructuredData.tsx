@@ -33,6 +33,8 @@ const orgSchema = {
   description: "Educational resource comparing 529 plans, financial aid, and college funding strategy.",
 };
 
+const FAQ_SECTION_ID = "learn";
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -43,12 +45,23 @@ const faqSchema = {
   })),
 };
 
-export function StructuredData() {
+/**
+ * Site-identity schema goes on every route. FAQPage is scoped to the section
+ * that actually contains the questions — a rich result should attach to the
+ * page that answers them, and repeating the same FAQ block on all 16 routes
+ * would be duplicate structured data.
+ */
+export function StructuredData({ sectionId }: { sectionId?: string } = {}) {
+  const onHome = sectionId === undefined;
+  const showFaq = onHome || sectionId === FAQ_SECTION_ID;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(orgSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(faqSchema) }} />
+      {showFaq && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(faqSchema) }} />
+      )}
     </>
   );
 }

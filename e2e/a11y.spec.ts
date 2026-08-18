@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("drawer accessibility", () => {
   test("moves focus into the drawer and traps Tab inside it", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /Compare plans/i }).click();
+    await page.getByRole("link", { name: /Compare plans/i }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
@@ -21,7 +21,7 @@ test.describe("drawer accessibility", () => {
 
   test("marks the background inert while the drawer is open", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /Compare plans/i }).click();
+    await page.getByRole("link", { name: /Compare plans/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     expect(await page.locator("[inert]").count()).toBeGreaterThan(0);
 
@@ -33,7 +33,7 @@ test.describe("drawer accessibility", () => {
 
   test("restores focus to the triggering tile on close", async ({ page }) => {
     await page.goto("/");
-    const trigger = page.getByRole("button", { name: /Compare plans/i });
+    const trigger = page.getByRole("link", { name: /Compare plans/i });
     await trigger.click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.keyboard.press("Escape");
@@ -48,7 +48,7 @@ test.describe("drawer accessibility", () => {
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     page.on("pageerror", (e) => errors.push(String(e)));
 
-    await page.goto("/#calculators");
+    await page.goto("/calculators/");
     await expect(page.getByRole("dialog")).toBeVisible();
     expect(errors).toEqual([]);
     await context.close();

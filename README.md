@@ -11,7 +11,11 @@ deployed as a **fully static site** — primarily to **Cloudflare Pages**, with
 
 ## What's inside
 
-A tile-launcher interface with 16 sections, each opening in a drawer:
+A tile-launcher interface with 16 sections. Each is a **real route**
+(`/compare/`, `/calculators/`, …) with its own title, description, and
+canonical URL, so sections are independently indexable — but clicking a tile
+opens it in a drawer without a page reload, and Back closes the drawer.
+Legacy `#section` links still work and are upgraded to the route form.
 
 - **Overview** — how a 529 works, the funding waterfall, key stats.
 - **What is a 529?** — rules, qualified expenses, the $35k Roth rollover escape hatch.
@@ -46,6 +50,12 @@ A tile-launcher interface with 16 sections, each opening in a drawer:
 
 All graphics are inline SVG and all data lives in `/lib/data`, so the site is
 fully self-contained (no runtime external requests) and works offline.
+
+### Adding a section
+
+`lib/sections.tsx` remains the single source of truth. Add an entry (with an
+`seoDescription`) and a matching icon in `components/SectionIcons.tsx`; the
+launcher grid, drawer, route, metadata, and sitemap all follow automatically.
 
 ## Tech
 

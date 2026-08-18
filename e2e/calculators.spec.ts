@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("state benefit calculator", () => {
   test("applies the state deduction cap instead of the raw contribution", async ({ page }) => {
-    await page.goto("/#calculators");
+    await page.goto("/calculators/");
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
@@ -22,7 +22,7 @@ test.describe("state benefit calculator", () => {
   });
 
   test("shows no benefit for a state without an income tax", async ({ page }) => {
-    await page.goto("/#calculators");
+    await page.goto("/calculators/");
     const card = page.getByRole("dialog").locator(".card", { hasText: "What is your state tax break worth?" });
     await card.locator("select").selectOption("TX");
     await expect(card).toContainText("No contribution tax break");
@@ -30,7 +30,7 @@ test.describe("state benefit calculator", () => {
   });
 
   test("prices the fee drag in the growth projection", async ({ page }) => {
-    await page.goto("/#calculators");
+    await page.goto("/calculators/");
     const card = page.getByRole("dialog").locator(".card", { hasText: "529 growth projection" });
     await expect(card).toBeVisible();
     // A non-zero default fee must show its cost, so fees are not invisible.
