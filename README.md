@@ -2,7 +2,8 @@
 
 A full, self-contained, daily-refreshed guide to **529 education savings plans**
 and the entire landscape of paying for college — built with **Next.js** and
-deployed as a **static site on GitHub Pages**.
+deployed as a **fully static site** — primarily to **Cloudflare Pages**, with
+**GitHub Pages** kept as a daily-refreshed fallback.
 
 > Educational information only — not tax, legal, or investment advice. Verify
 > all figures against official plan documents and current IRS / Federal Student
@@ -10,7 +11,11 @@ deployed as a **static site on GitHub Pages**.
 
 ## What's inside
 
-A pill-toggle, browse-everything interface with 13 sections:
+A tile-launcher interface with 16 sections. Each is a **real route**
+(`/compare/`, `/calculators/`, …) with its own title, description, and
+canonical URL, so sections are independently indexable — but clicking a tile
+opens it in a drawer without a page reload, and Back closes the drawer.
+Legacy `#section` links still work and are upgraded to the route form.
 
 - **Overview** — how a 529 works, the funding waterfall, key stats.
 - **What is a 529?** — rules, qualified expenses, the $35k Roth rollover escape hatch.
@@ -37,10 +42,20 @@ A pill-toggle, browse-everything interface with 13 sections:
 - **Crypto** — advantages, drawbacks, tax mechanics, and aid impact.
 - **2-year & working programs** — community-college transfer, free-tuition
   programs, apprenticeships, co-ops, and employer tuition assistance.
+- **FAQ & glossary** — 15 common questions plus a plain-English glossary.
+- **Reading room** — a daily-refreshed feed of 529 and college-funding articles.
+- **Sports & music** — athletic and arts scholarships, recruiting timelines, and
+  the realistic odds.
 - **Sources** — every reference used.
 
 All graphics are inline SVG and all data lives in `/lib/data`, so the site is
 fully self-contained (no runtime external requests) and works offline.
+
+### Adding a section
+
+`lib/sections.tsx` remains the single source of truth. Add an entry (with an
+`seoDescription`) and a matching icon in `components/SectionIcons.tsx`; the
+launcher grid, drawer, route, metadata, and sitemap all follow automatically.
 
 ## Tech
 
@@ -63,6 +78,28 @@ To preview the production build exactly as GitHub Pages serves it (under the
 ```bash
 NEXT_PUBLIC_BASE_PATH=/529 npm run build
 ```
+
+## Testing
+
+```bash
+npm test           # unit + end-to-end
+npm run test:unit  # Vitest: financial math and data invariants
+npm run test:e2e   # Playwright: desktop + mobile, against the real out/ build
+```
+
+- **Unit** (`tests/`) — pins the compounding, amortization, and inflation math in
+  `lib/format.ts` against independently-derived closed-form values, and asserts
+  invariants over the hand-maintained datasets (51 states, unique abbreviations,
+  plausible fee/cap ranges, unique FAQ questions, a well-formed section registry).
+- **End-to-end** (`e2e/`) — serves the actual static export via
+  `scripts/serve-static.mjs` (zero dependencies) and covers the launcher, hash
+  routing, Back-closes-drawer, deep links, focus trap, `inert` background, focus
+  restoration, reduced motion, prerendered content, and JSON-LD — asserting zero
+  console errors throughout.
+
+`npm run test:e2e` needs a Chromium: CI runs `npx playwright install chromium`.
+If your environment already ships one whose build differs from this Playwright
+release, point at it with `PW_CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.
 
 ## "Refresh every day"
 

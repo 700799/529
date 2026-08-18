@@ -28,3 +28,8 @@ next-env.d.ts
 
 # generated at build (prebuild)
 /public/og.png
+
+# test artifacts
+/test-results/
+/playwright-report/
+/blob-report/

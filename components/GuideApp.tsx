@@ -5,16 +5,28 @@ import { Subscribe } from "./Subscribe";
 import { Drawer } from "./Drawer";
 import { SectionIcon } from "./SectionIcons";
 import { SECTIONS, sectionById } from "@/lib/sections";
+import { sectionPath, homePath, sectionIdFromPath } from "@/lib/routes";
 import meta from "@/lib/data/meta.json";
 
-function hashId(): string | null {
+/**
+ * Which section the current URL selects.
+ *
+ * Sections are real routes (`/compare/`) so each is independently indexable.
+ * Legacy `#compare` links are still honoured — they predate the routes and are
+ * out in the wild — and are upgraded to the route form on load.
+ */
+function currentId(): string | null {
   if (typeof window === "undefined") return null;
-  const id = window.location.hash.replace(/^#/, "");
-  return sectionById[id] ? id : null;
+  const fromPath = sectionIdFromPath(window.location.pathname);
+  if (fromPath) return fromPath;
+  const hash = window.location.hash.replace(/^#/, "");
+  return sectionById[hash] ? hash : null;
 }
 
-export default function GuideApp() {
-  const [openId, setOpenId] = useState<string | null>(null);
+export default function GuideApp({ initialSection = null }: { initialSection?: string | null }) {
+  // Seeded from the server-rendered route so the correct section is open in
+  // the very first paint — no flash of the launcher on a deep link.
+  const [openId, setOpenId] = useState<string | null>(initialSection);
   const [dark, setDark] = useState(false);
 
   // Theme init + persistence.
@@ -34,25 +46,27 @@ export default function GuideApp() {
     }
   }, [dark]);
 
-  // Deep-linking: the active section mirrors the URL hash, so drawers are
-  // shareable/bookmarkable and the browser Back button closes the drawer.
+  // The active section mirrors the URL, so drawers are shareable/bookmarkable
+  // and the browser Back button closes the drawer rather than leaving the site.
   useEffect(() => {
-    const sync = () => setOpenId(hashId());
+    const sync = () => setOpenId(currentId());
     sync();
+    // Upgrade a legacy "#compare" entry to "/compare/" without adding history.
+    const legacy = window.location.hash.replace(/^#/, "");
+    if (!sectionIdFromPath(window.location.pathname) && sectionById[legacy]) {
+      window.history.replaceState({ g529: true }, "", sectionPath(legacy));
+    }
     window.addEventListener("popstate", sync);
-    window.addEventListener("hashchange", sync);
-    return () => {
-      window.removeEventListener("popstate", sync);
-      window.removeEventListener("hashchange", sync);
-    };
+    return () => window.removeEventListener("popstate", sync);
   }, []);
 
   const go = (id: string) => {
     if (!sectionById[id]) return;
     if (typeof window !== "undefined") {
-      const url = `#${id}`;
-      if (openId === null) window.history.pushState({ g529: true }, "", url);
-      else window.history.replaceState({ g529: true }, "", url);
+      // pushState only when opening from the launcher, so Back always lands
+      // back on the launcher rather than walking through every section visited.
+      if (openId === null) window.history.pushState({ g529: true }, "", sectionPath(id));
+      else window.history.replaceState({ g529: true }, "", sectionPath(id));
     }
     setOpenId(id);
   };
@@ -62,7 +76,9 @@ export default function GuideApp() {
       if (window.history.state && (window.history.state as { g529?: boolean }).g529) {
         window.history.back(); // pops our entry; the popstate listener sets null
       } else {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        // Entered directly on a section route: rewrite to the launcher instead
+        // of leaving the site.
+        window.history.replaceState(null, "", homePath());
       }
     }
     setOpenId(null);
@@ -76,8 +92,9 @@ export default function GuideApp() {
 
   // Exactly one section is un-hidden at all times (overview when the drawer is
   // closed), so its content is present/crawlable and heavy charts only mount for
-  // the section on screen.
-  const contentActiveId = openId ?? "overview";
+  // the section on screen. On a section route that is the routed section, which
+  // is what puts its content in the statically exported HTML.
+  const contentActiveId = openId ?? initialSection ?? "overview";
 
   return (
     <div className="flex h-[100svh] flex-col overflow-hidden">
@@ -109,18 +126,29 @@ export default function GuideApp() {
         {/* App launcher grid — fits the viewport, no scrolling */}
         <main className="flex min-h-0 flex-1 flex-col px-3 pb-3 sm:px-6 sm:pb-6">
           <div className="mb-2 shrink-0 px-1 sm:mb-3">
-            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+            {/* h2, not h1: the Overview section's prerendered headline (below) is
+                the page's single h1 for SEO. */}
+            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
               Everything you need to pay for college
-            </h1>
+            </h2>
             <p className="hidden text-sm text-slate-500 dark:text-slate-400 sm:block">
               Tap any tile — it opens in a drawer. Compare every plan, run the calculators, and avoid the worst-case mistakes.
             </p>
           </div>
           <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-4">
             {SECTIONS.map((s) => (
-              <button
+              // A real anchor, not a button: crawlers follow href to discover
+              // each section route, and users get middle-click / open-in-new-tab
+              // for free. The click handler keeps in-page navigation instant;
+              // modified clicks fall through to the browser.
+              <a
                 key={s.id}
-                onClick={() => go(s.id)}
+                href={sectionPath(s.id)}
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                  e.preventDefault();
+                  go(s.id);
+                }}
                 className="group flex min-h-0 flex-col items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white p-2 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-800 dark:bg-slate-900 sm:gap-2 sm:p-3"
               >
                 <span
@@ -133,7 +161,7 @@ export default function GuideApp() {
                   {s.label}
                 </span>
                 <span className="hidden text-[10px] text-slate-400 sm:block">{s.blurb}</span>
-              </button>
+              </a>
             ))}
           </div>
         </main>
@@ -152,7 +180,7 @@ export default function GuideApp() {
         {SECTIONS.map((s, i) => {
           const nextOfThis = i < SECTIONS.length - 1 ? SECTIONS[i + 1] : undefined;
           return (
-            <div key={s.id} hidden={s.id !== contentActiveId} className="space-y-10">
+            <div key={s.id} id={s.id} hidden={s.id !== contentActiveId} className="space-y-10">
               {s.render(go)}
               {s.showSubscribe && <Subscribe />}
               <SectionFooter

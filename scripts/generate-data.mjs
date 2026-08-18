@@ -32,6 +32,12 @@ const academicYear = `${fallYear}-${(fallYear + 1).toString().slice(2)}`;
 // Long-run college cost inflation assumption used by the projection charts.
 const TUITION_INFLATION = 0.05;
 
+// The cycle the hand-maintained constants below actually represent. Must match
+// DATA_CYCLE in lib/data/meta-cycle.ts -- a test asserts they agree. This is
+// deliberately NOT derived from the build date: the nightly job re-stamps
+// dates, it does not re-verify tax and aid figures.
+const DATA_CYCLE = "2025-26";
+
 const meta = {
   generatedAtISO: now.toISOString(),
   generatedAtHuman: now.toLocaleDateString("en-US", {
@@ -50,7 +56,8 @@ const meta = {
   estateExemption2026: 15000000,
   rothRolloverLifetime: 35000,
   pellMax: 7395,
-  note: "Tax and aid figures are maintained estimates for the 2025-2026 cycle and are stamped on each daily rebuild. Verify current numbers against the cited primary sources before acting.",
+  dataCycle: DATA_CYCLE,
+  note: `Tax and aid figures are maintained estimates for the ${DATA_CYCLE} cycle. The site rebuilds daily, but that re-stamps the date and refreshes articles -- it does not re-verify these figures. Check them against the cited primary sources before acting.`,
 };
 
 writeFileSync(
