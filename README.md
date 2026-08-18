@@ -69,6 +69,28 @@ To preview the production build exactly as GitHub Pages serves it (under the
 NEXT_PUBLIC_BASE_PATH=/529 npm run build
 ```
 
+## Testing
+
+```bash
+npm test           # unit + end-to-end
+npm run test:unit  # Vitest: financial math and data invariants
+npm run test:e2e   # Playwright: desktop + mobile, against the real out/ build
+```
+
+- **Unit** (`tests/`) — pins the compounding, amortization, and inflation math in
+  `lib/format.ts` against independently-derived closed-form values, and asserts
+  invariants over the hand-maintained datasets (51 states, unique abbreviations,
+  plausible fee/cap ranges, unique FAQ questions, a well-formed section registry).
+- **End-to-end** (`e2e/`) — serves the actual static export via
+  `scripts/serve-static.mjs` (zero dependencies) and covers the launcher, hash
+  routing, Back-closes-drawer, deep links, focus trap, `inert` background, focus
+  restoration, reduced motion, prerendered content, and JSON-LD — asserting zero
+  console errors throughout.
+
+`npm run test:e2e` needs a Chromium: CI runs `npx playwright install chromium`.
+If your environment already ships one whose build differs from this Playwright
+release, point at it with `PW_CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.
+
 ## "Refresh every day"
 
 `scripts/generate-data.mjs` runs before every build: it stamps
