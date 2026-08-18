@@ -2,7 +2,8 @@
 
 A full, self-contained, daily-refreshed guide to **529 education savings plans**
 and the entire landscape of paying for college — built with **Next.js** and
-deployed as a **static site on GitHub Pages**.
+deployed as a **fully static site** — primarily to **Cloudflare Pages**, with
+**GitHub Pages** kept as a daily-refreshed fallback.
 
 > Educational information only — not tax, legal, or investment advice. Verify
 > all figures against official plan documents and current IRS / Federal Student
@@ -10,7 +11,7 @@ deployed as a **static site on GitHub Pages**.
 
 ## What's inside
 
-A pill-toggle, browse-everything interface with 13 sections:
+A tile-launcher interface with 16 sections, each opening in a drawer:
 
 - **Overview** — how a 529 works, the funding waterfall, key stats.
 - **What is a 529?** — rules, qualified expenses, the $35k Roth rollover escape hatch.
@@ -37,6 +38,10 @@ A pill-toggle, browse-everything interface with 13 sections:
 - **Crypto** — advantages, drawbacks, tax mechanics, and aid impact.
 - **2-year & working programs** — community-college transfer, free-tuition
   programs, apprenticeships, co-ops, and employer tuition assistance.
+- **FAQ & glossary** — 15 common questions plus a plain-English glossary.
+- **Reading room** — a daily-refreshed feed of 529 and college-funding articles.
+- **Sports & music** — athletic and arts scholarships, recruiting timelines, and
+  the realistic odds.
 - **Sources** — every reference used.
 
 All graphics are inline SVG and all data lives in `/lib/data`, so the site is
